@@ -2,7 +2,7 @@
 
 A responsive Learning Management System frontend built with React, Vite, Redux Toolkit, and Tailwind CSS. The application provides interfaces for user authentication, course browsing and management, lecture handling, profile management, and subscription checkout.
 
-**Repository:** [lms-frontend](https://github.com/arjungupt771/lms-frontend)
+**Repository:** [Learnova](https://github.com/arjungupt771/Learnova)
 
 ## Features
 
