@@ -1,69 +1,148 @@
+
 import { useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import HomeLayout from "../../layouts/HomeLayout";
 
 function CourseDescription() {
-    
-    const { state } = useLocation();
+    const { state: course } = useLocation();
     const navigate = useNavigate();
 
     const { role, data } = useSelector((state) => state.auth);
 
+    const isAdmin = role === "ADMIN";
+    const hasActiveSubscription =
+        data?.subscription?.status === "active";
+    const canWatchLectures = isAdmin || hasActiveSubscription;
+
+    if (!course || typeof course !== "object" || !course.title) {
+        return (
+            <HomeLayout>
+                <main className="flex min-h-[80vh] flex-col items-center justify-center gap-5 px-4 text-center text-white">
+                    <h1 className="text-2xl font-bold sm:text-3xl">
+                        Course details unavailable
+                    </h1>
+
+                    <p className="max-w-md text-gray-300">
+                        This page needs course information. Please return to
+                        the course catalogue and select a course again.
+                    </p>
+
+                    <Link
+                        to="/courses"
+                        className="rounded-md bg-yellow-500 px-6 py-3 font-semibold text-black transition hover:bg-yellow-600"
+                    >
+                        Browse courses
+                    </Link>
+                </main>
+            </HomeLayout>
+        );
+    }
+
+    const thumbnailUrl = course.thumbnail?.secure_url;
+    const lectureCount = Number(course.numberOfLectures);
+
     return (
         <HomeLayout>
-            <div className="min-h-[90vh] pt-12 px-20 flex flex-col items-center justify-center text-white">
-                <div className="grid grid-cols-2 gap-10 py-10 relative">
-                    <div className="space-y-5">
-                        <img 
-                            className="w-full h-64"
-                            alt="thumbnail"
-                            src={state?.thumbnail?.secure_url}
-                        />
-                        <div className="space-y-4">
-                            <div className="flex flex-col items-center justify-between text-xl">
-                                <p className="font-semibold">
-                                    <span className="font-bold text-yellow-500">Total Lectures: {" "}</span> {state?.numberOfLectures}
-                                </p>
-                                <p className="font-semibold">
-                                    <span className="font-bold text-yellow-500">Instructor: {" "}</span> {state?.createdBy}
-                                </p>
-
+            <main className="min-h-[90vh] px-4 py-10 text-white sm:px-8 lg:px-16 xl:px-20">
+                <div className="mx-auto grid w-full max-w-6xl grid-cols-1 items-start gap-8 lg:grid-cols-2 lg:gap-12">
+                    <section className="space-y-6">
+                        {thumbnailUrl ? (
+                            <img
+                                src={thumbnailUrl}
+                                alt={`${course.title} course thumbnail`}
+                                className="h-56 w-full rounded-lg border border-gray-700 bg-gray-900 object-contain sm:h-72"
+                            />
+                        ) : (
+                            <div
+                                className="flex h-56 w-full items-center justify-center rounded-lg border border-gray-700 bg-gray-900 text-gray-400 sm:h-72"
+                                role="img"
+                                aria-label="Course thumbnail unavailable"
+                            >
+                                No thumbnail available
                             </div>
-                            {role == "ADMIN" || data?.subscription?.status === 'active'? (
-                                <button
-                                    onClick={() => navigate("/course/displaylectures", {state: {...state}})}
-                                    className="bg-yellow-500 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-600 transition-all ease-in-out duration-300"
-                                >
-                                    Watch Lectures
-                                </button>
-                            ): (
-                                <button
-                                onClick={() => navigate("/checkout")}
-                                className="bg-yellow-500 text-xl rounded-md font-bold px-5 py-3 w-full hover:bg-yellow-600 transition-all ease-in-out duration-300"
-                                >
-                                    Subscribe
-                                </button>
+                        )}
+
+                        <div className="space-y-4 rounded-lg bg-gray-900/50 p-5">
+                            <p className="text-lg font-semibold">
+                                <span className="text-yellow-500">
+                                    Total lectures:{" "}
+                                </span>
+                                {Number.isFinite(lectureCount) &&
+                                lectureCount >= 0
+                                    ? lectureCount
+                                    : "Not available"}
+                            </p>
+
+                            <p className="text-lg font-semibold">
+                                <span className="text-yellow-500">
+                                    Instructor:{" "}
+                                </span>
+                                {course.createdBy || "Not specified"}
+                            </p>
+
+                            {course.category && (
+                                <p className="text-lg font-semibold">
+                                    <span className="text-yellow-500">
+                                        Category:{" "}
+                                    </span>
+                                    {course.category}
+                                </p>
                             )}
 
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (canWatchLectures) {
+                                        navigate(
+                                            "/course/displaylectures",
+                                            { state: { ...course } }
+                                        );
+                                    } else {
+                                        navigate("/checkout");
+                                    }
+                                }}
+                                className="w-full rounded-md bg-yellow-500 px-5 py-3 text-lg font-bold text-black transition hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:ring-offset-2 focus:ring-offset-gray-900"
+                            >
+                                {canWatchLectures
+                                    ? "Watch Lectures"
+                                    : "Subscribe to Access"}
+                            </button>
+
+                            {!canWatchLectures && (
+                                <p className="text-center text-sm text-gray-400">
+                                    An active subscription is required to
+                                    access course lectures.
+                                </p>
+                            )}
                         </div>
-                    </div>
+                    </section>
 
-                    {/* Right of the grid */}
-                    <div className="space-y-2 text-xl">
-                        <h1 className="text-3xl font-bold text-yellow-500 mb-5 text-center">
-                            {state?.title}
+                    <section className="space-y-5">
+                        <h1 className="break-words text-center text-3xl font-bold text-yellow-500 sm:text-4xl lg:text-left">
+                            {course.title}
                         </h1>
-                        <p className="text-yellow-500">
-                            Course Description: {" "}
-                        </p>
-                        <p>
-                            {state?.description}
-                        </p>
 
-                    </div>
+                        <div className="space-y-3">
+                            <h2 className="text-xl font-semibold text-yellow-500">
+                                About this course
+                            </h2>
+
+                            <p className="whitespace-pre-line break-words leading-7 text-gray-200">
+                                {course.description ||
+                                    "No description is available for this course yet."}
+                            </p>
+                        </div>
+
+                        <Link
+                            to="/courses"
+                            className="inline-block text-yellow-500 underline underline-offset-4 transition hover:text-yellow-400"
+                        >
+                            Back to all courses
+                        </Link>
+                    </section>
                 </div>
-            </div>
+            </main>
         </HomeLayout>
     );
 }

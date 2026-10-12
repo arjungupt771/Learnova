@@ -1,40 +1,52 @@
+
 import { RxCrossCircled } from "react-icons/rx";
 import { Link } from "react-router-dom";
 
 import HomeLayout from "../../layouts/HomeLayout";
 
 function CheckoutFailure() {
-
     return (
         <HomeLayout>
-            <div className="min-h-[90vh] flex items-center justify-center text-white">
-                <div className="w-80 h-[26rem] flex flex-col justify-center items-center shadow-[0_0_10px_black] rounded-lg relative">
-
-                    <h1 className="bg-red-500 absolute text-center top-0 w-full py-4 text-2xl font-bold rounded-tl-lg rounded-tr-lg">
-                        Payment Failed
+            <main className="flex min-h-[90vh] items-center justify-center px-4 py-10 text-white">
+                <section className="relative flex min-h-[26rem] w-full max-w-sm flex-col items-center justify-center rounded-lg shadow-[0_0_10px_black]">
+                    <h1 className="absolute top-0 w-full rounded-t-lg bg-red-600 py-4 text-center text-2xl font-bold">
+                        Payment not completed
                     </h1>
 
-                    <div className="px-4 flex flex-col items-center justify-center space-y-2">
-                        <h2 className="text-lg font-semibold">
-                            OOPS! your payment failed
+                    <div className="flex flex-col items-center gap-4 px-6 pt-12 text-center">
+                        <RxCrossCircled
+                            className="text-6xl text-red-500"
+                            aria-hidden="true"
+                        />
+
+                        <h2 className="text-xl font-semibold">
+                            We couldn&apos;t complete your payment.
                         </h2>
-                        <p className="text-left">
-                           Please try again later
+
+                        <p className="text-gray-300">
+                            You can return to checkout to try again. If money
+                            was deducted, check your payment status or contact
+                            support before attempting another payment.
                         </p>
                     </div>
 
-                    <RxCrossCircled className="text-5xl text-red-500 mt-2" />
-                    <Link to="/" className="bg-red-500 hover:bg-red-600 transition-all ease-in-out duration-300 absolute bottom-0 w-full py-2 text-center rounded-br-lg rounded-bl-lg">
-                        <button>Go to dashboard</button>
-                    
+                    <Link
+                        to="/checkout"
+                        className="absolute bottom-12 w-full px-4 py-3 text-center font-semibold text-yellow-400 underline underline-offset-4 transition hover:text-yellow-300"
+                    >
+                        Return to checkout
                     </Link>
-                </div>
 
-                
-
-            </div>
+                    <Link
+                        to="/"
+                        className="absolute bottom-0 w-full rounded-b-lg bg-red-600 py-3 text-center font-semibold transition hover:bg-red-500"
+                    >
+                        Go to dashboard
+                    </Link>
+                </section>
+            </main>
         </HomeLayout>
-    )
+    );
 }
 
 export default CheckoutFailure;

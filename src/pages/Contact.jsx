@@ -5,106 +5,140 @@ import axiosInstance from "../config/axiosInstance";
 import { isEmail } from "../helpers/regexMatcher";
 import HomeLayout from "../layouts/HomeLayout";
 
+const INITIAL_FORM = {
+    name: "",
+    email: "",
+    message: "",
+};
+
 function Contact() {
+    const [userInput, setUserInput] = useState(INITIAL_FORM);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [userInput, setUserInput] = useState({
-        name: "",
-        email: "",
-        message: ""
-    })
+    function handleInputChange(event) {
+        const { name, value } = event.target;
 
-    function handleInputChange(e) {
-        const {name, value} = e.target;
-        setUserInput({
-            ...userInput, 
-            [name]: value
-        })
+        setUserInput((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
     }
 
-    async function onFormSubmit(e)  {
-        e.preventDefault();
-        if(!userInput.email || !userInput.name || !userInput.message) {
-            toast.error("All fields are mandatory");
+    async function onFormSubmit(event) {
+        event.preventDefault();
+
+        if (isSubmitting) return;
+
+        const name = userInput.name.trim();
+        const email = userInput.email.trim();
+        const message = userInput.message.trim();
+
+        if (!name || !email || !message) {
+            toast.error("All fields are mandatory.");
             return;
         }
-        if(!isEmail(userInput.email)) {
-            toast.error("Invalid email provided");
+
+        if (!isEmail(email)) {
+            toast.error("Please enter a valid email address.");
             return;
         }
+
+        setIsSubmitting(true);
+
         try {
-            const response = axiosInstance.post("/contact", userInput);
-            toast.promise(response, {
-                loading: "Submitting your query",
-                success: "Form submitted successfully",
-                error: "Failed to submit the form"
-            });
-            const responseData = await response;
-            console.log(responseData);
-            if(responseData?.data) {
-                setUserInput({
-                    email: "",
-                    name: "",
-                    message: ""
-                })
-            }
-        } catch(error) {
-            toast.error("operation failed....");
+            await toast.promise(
+                axiosInstance.post("/contact", { name, email, message }),
+                {
+                    loading: "Submitting your query...",
+                    success: "Your message was submitted successfully.",
+                    error: (error) =>
+                        error?.response?.data?.message ||
+                        "Failed to submit your message. Please try again.",
+                }
+            );
+
+            setUserInput({ ...INITIAL_FORM });
+        } catch {
+            // toast.promise displays the request error.
+        } finally {
+            setIsSubmitting(false);
         }
     }
+
     return (
         <HomeLayout>
-            <div className="flex items-center justify-center h-[100vh]">
-                <form onSubmit={onFormSubmit} noValidate className="flex flex-col items-center justify-center gap-2 p-5 w-[22rem] rounded-md text-white ">
-                    <h1 className="text-3xl font-semibold">Contact form</h1>
-                    <div className="flex flex-col gap-1 w-full">
-                        <label htmlFor="name" className="text-xl font-semibold">
+            <main className="flex min-h-[90vh] items-center justify-center px-4 py-10">
+                <form
+                    onSubmit={onFormSubmit}
+                    noValidate
+                    className="flex w-full max-w-md flex-col items-center justify-center gap-4 rounded-md p-5 text-white"
+                >
+                    <h1 className="text-3xl font-semibold">Contact us</h1>
+
+                    <div className="flex w-full flex-col gap-1">
+                        <label htmlFor="name" className="font-semibold">
                             Name
                         </label>
-                        <input 
+                        <input
                             id="name"
-                            className="bg-white border px-2 py-1 rounded-sm text-black"
-                            type="text"
-                            placeholder="enter your name"
                             name="name"
-                            onChange={handleInputChange}
+                            type="text"
+                            autoComplete="name"
+                            maxLength={100}
+                            required
+                            placeholder="Enter your name"
+                            className="rounded-sm border bg-white px-3 py-2 text-black"
                             value={userInput.name}
+                            onChange={handleInputChange}
                         />
                     </div>
-                    <div className="flex flex-col gap-1 w-full">
-                        <label htmlFor="email" className="text-xl font-semibold">
+
+                    <div className="flex w-full flex-col gap-1">
+                        <label htmlFor="email" className="font-semibold">
                             Email
                         </label>
-                        <input 
+                        <input
                             id="email"
-                            className="bg-white border px-2 py-1 rounded-sm text-black"
-                            type="email"
-                            placeholder="enter your email"
                             name="email"
-                            onChange={handleInputChange}
+                            type="email"
+                            autoComplete="email"
+                            maxLength={254}
+                            required
+                            placeholder="Enter your email"
+                            className="rounded-sm border bg-white px-3 py-2 text-black"
                             value={userInput.email}
+                            onChange={handleInputChange}
                         />
                     </div>
-                    <div className="flex flex-col gap-1 w-full">
-                        <label htmlFor="message" className="text-xl font-semibold">
+
+                    <div className="flex w-full flex-col gap-1">
+                        <label htmlFor="message" className="font-semibold">
                             Message
                         </label>
-                        <textarea 
+                        <textarea
                             id="message"
-                            className="bg-white border px-2 py-1 rounded-sm resize-none h-40 text-black"
-                            type="text"
-                            placeholder="enter your message"
                             name="message"
-                            onChange={handleInputChange}
+                            required
+                            maxLength={5000}
+                            rows={6}
+                            placeholder="Enter your message"
+                            className="resize-y rounded-sm border bg-white px-3 py-2 text-black"
                             value={userInput.message}
+                            onChange={handleInputChange}
                         />
                     </div>
-                    <button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 transition-all ease-in-out duration-300 rounded-sm py-2 font-semibold text-lg cursor-pointer">
-                        Submit
+
+                    <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full rounded-sm bg-yellow-400 py-3 text-lg font-semibold text-black transition hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {isSubmitting ? "Submitting..." : "Submit"}
                     </button>
                 </form>
-            </div>
+            </main>
         </HomeLayout>
-    )
+    );
 }
 
 export default Contact;

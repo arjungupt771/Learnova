@@ -3,7 +3,7 @@ import { FiMenu } from 'react-icons/fi';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 
-import Footer from "../components/footer";
+import Footer from "../components/Footer";
 import { logout } from '../redux/slices/authSlice';
 
 
@@ -59,13 +59,6 @@ function HomeLayout({ children }) {
                         </li>
                         {isLoggedIn && role === "ADMIN" && (
                             <li>
-                                <Link to="/admin/dashboard">Admin Dashboard</Link>
-                            </li>
-                        )
-
-                        }
-                        {isLoggedIn && role === "ADMIN" && (
-                            <li>
                                 <Link to="/course/create">Create Course</Link>
                             </li>
                         )
@@ -75,7 +68,7 @@ function HomeLayout({ children }) {
                             <Link to="/about"> About us </Link>
                         </li>
                         <li>
-                            <Link to="/contact"> Contact us </Link>
+                            <Link to="/contacts"> Contact us </Link>
                         </li>
                         <li>
                             <Link to="/courses"> All courses </Link>
